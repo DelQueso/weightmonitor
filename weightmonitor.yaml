@@ -22,7 +22,7 @@ esp32:
   framework:
     type: esp-idf
 
-api:
+
 
 ota:
 - platform: http_request
@@ -37,25 +37,25 @@ logger:
   level: NONE
 
 
+api:  
+  services:
+    - service: set_zero
+      then:
+        - globals.set:
+            id: calibration_empty
+            value: !lambda "return id(raw_weight).state;"
+        - logger.log: "Zero point captured!"
   
-services:
-  - service: set_zero
-    then:
-      - globals.set:
-          id: calibration_empty
-          value: !lambda "return id(raw_weight).state;"
-      - logger.log: "Zero point captured!"
-
-  - service: set_loaded
-    variables:
-      value: float  # This allows passing a value from Home Assistant
-    then:
-      - globals.set:
-          id: calibration_known
-          value: !lambda "return id(raw_weight).state;"
-      - globals.set:
-          id: load_weight
-          value: !lambda "return value;"
+    - service: set_loaded
+      variables:
+        value: float  # This allows passing a value from Home Assistant
+      then:
+        - globals.set:
+            id: calibration_known
+            value: !lambda "return id(raw_weight).state;"
+        - globals.set:
+            id: load_weight
+            value: !lambda "return value;"
 
 
 text_sensor:
