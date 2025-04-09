@@ -85,7 +85,7 @@ command_line:
 - sensor:
       name: "weightmonitor_template_latest_config_version"
       command: >
-        wget -qO- https://raw.githubusercontent.com/DelQueso/weightmonitor/refs/heads/main/weightmonitor_template.yaml |
+        wget -qO- https://raw.githubusercontent.com/DelQueso/weightmonitor/refs/heads/main/weightmonitor_config.yaml |
         grep 'state:' | head -n 1 | cut -d':' -f2 | xargs
       scan_interval: 30
       value_template: "{{ value }}"
