@@ -1,6 +1,6 @@
 substitutions:
-  name: "climatemonitor"
-  friendly_name: "Climate Monitor"
+  name: "weightmonitor"
+  friendly_name: "Weight Monitor"
 esphome:
   name: "${name}"
   friendly_name: "${friendly_name}"
@@ -9,7 +9,7 @@ esphome:
 
 
 project:
-  name: "delqueso.climatemonitor"
+  name: "delqueso.weightmonitor"
 
 # Example configuration entry
 http_request:
@@ -19,7 +19,7 @@ http_request:
 update:
   - platform: http_request
     name: Firmware Update
-    source: https://github.com/delqueso/climatemonitor/releases/latest/download/climatemonitor.manifest.json
+    source: https://github.com/delqueso/weightmonitor/releases/latest/download/weightmonitor.manifest.json
 esp32:
   board: esp32dev
   framework:
