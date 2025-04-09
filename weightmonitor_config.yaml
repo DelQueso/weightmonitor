@@ -1,7 +1,7 @@
 template:
   - sensor:
     - name: weightmonitor_template_installed_config_version
-      state: 0.0.1
+      state: 0.0.2
       attributes:
         friendly_name: "Config Version"
         myAttr: DelQueso
