@@ -1,0 +1,176 @@
+template:
+  - sensor:
+    - name: weightmonitor_template_installed_config_version
+      state: 0.0.1
+      attributes:
+        friendly_name: "Config Version"
+        myAttr: DelQueso
+  # Check if weight is within range. When weight is unavailable, this value is set to false. The sensor becomes true after some delay.
+  - binary_sensor:
+    - name: weightmonitor_template_weight_below_alarm_level
+      delay_on: >
+        {% set delayOn = states('input_number.weightmonitor_template_weight_alarm_notification_delay') | int(0) %}
+        {{ delayOn }}
+      state: >
+        {% set remaining_capacity = states('sensor.weightmonitor_template_remaining_capacity') %}
+        {% set low_weight_alarm_th = 10 %}
+        {% if remaining_capacity in ['unavailable', 'unknown', 'none'] %}
+          False
+        {% else %}
+          {% set remaining_capacity = remaining_capacity | float(0) %}
+          {{ remaining_capacity <= low_weight_alarm_th }}
+        {% endif %}
+    - name: weightmonitor_template_weight_below_warning_level
+      delay_on: >
+       {% set delayOn = states('input_number.weightmonitor_template_weight_alarm_notification_delay') | int(0) %}
+         {{delayOn}}
+      state: >
+        {% set remaining_capacity = states('sensor.weightmonitor_template_remaining_capacity') | float(0) %}
+        {% set low_weight_warning_th = 20 %}
+        {% if remaining_capacity in ['unavailable', 'unknown', 'none'] %}
+          False
+        {% else %}
+          {% set remaining_capacity = remaining_capacity | float %}
+          {% if remaining_capacity > low_weight_warning_th  %}
+            False
+          {% else %}
+            True
+          {% endif %}
+        {% endif %}
+  - sensor:
+      - name: weightmonitor_template_last_update
+        unit_of_measurement: "s"
+        state: "{{ (as_timestamp(now()) - as_timestamp(states.sensor.weightmonitor_template_weight.last_updated)) | float(0) | round(0) }}"
+      - unique_id: weightmonitor_template_alarm
+        state: >
+          {% set current_weight = states('sensor.weightmonitor_template_weight') %}
+          {% set last_update = states('sensor.weightmonitor_template_last_update') | float %}
+          {% set noResponse = last_update > 300 %}
+          {% if current_weight in ['unavailable', 'unknown', 'none'] and noResponse %}
+            Connection lost
+          {% else %}
+            {% set weight_alarm = states('binary_sensor.weightmonitor_template_weight_below_alarm_level') | bool %}
+            {% set weight_warning = states('binary_sensor.weightmonitor_template_weight_below_warning_level') | bool %}
+            {% if noResponse %}
+              Connection lost
+            {% elif weight_alarm %}
+              Weight alert
+            {% elif weight_warning %}
+              Weight warning
+            {% else %}
+              Off
+            {% endif %}
+          {% endif %}
+        attributes:
+          friendly_name: "{{ states('input_text.weightmonitor_template_name') }}"
+          group:  "{{ states('input_text.weightmonitor_template_group') }}"
+          location: "{{ states('input_text.weightmonitor_template_location') }}"
+          weight_alarm_notification_delay: "{{ states('input_number.weightmonitor_template_weight_alarm_notification_delay') }}"
+          warning_capacity_threshold: "{{ states('input_number.weightmonitor_template_warning_capacity_threshold') }}"
+          alarm_capacity_threshold: "{{ states('input_number.weightmonitor_template_alarm_capacity_threshold') }}"
+      - name: weightmonitor_template_net_weight
+        unit_of_measurement: "Kg"
+        state: >
+          {% set weight = states('sensor.weightmonitor_template_weight') | float %}
+          {% set tare_weight = states('input_number.weightmonitor_template_tare_weight') | float %}
+          {{ (weight - tare_weight) | round(2) }}
+      - name: weightmonitor_template_remaining_capacity
+        unit_of_measurement: "%"
+        state: >
+          {% set gross_weight = states('input_number.weightmonitor_template_gross_weight') | float %}
+          {% set net_weight = states('sensor.weightmonitor_template_net_weight') | float %}
+          {% set tare_weight = states('input_number.weightmonitor_template_tare_weight') | float %}
+          {{ (100 / (gross_weight - tare_weight) * net_weight) | round(0) }}
+command_line:
+- sensor:
+      name: "weightmonitor_template_latest_config_version"
+      command: >
+        wget -qO- https://raw.githubusercontent.com/DelQueso/weightmonitor/refs/heads/main/weightmonitor_template.yaml |
+        grep 'state:' | head -n 1 | cut -d':' -f2 | xargs
+      scan_interval: 30
+      value_template: "{{ value }}"
+input_number:
+  weightmonitor_template_warning_capacity_threshold:
+    name: Low Weight Threshold
+    mode: box
+    min: 0
+    max: 100
+    step: 1
+    unit_of_measurement: "%"
+  weightmonitor_template_alarm_capacity_threshold:
+    name: High Weight Threshold
+    mode: box
+    min: 0
+    max: 100
+    step: 1
+    unit_of_measurement: "%"
+    icon: mdi:weight-kilogram
+  weightmonitor_template_weight_alarm_notification_delay:
+    name: Weight Alarm Notification Delay
+    mode: box
+    min: 0
+    max: 600
+    step: 1
+    unit_of_measurement: "s"
+ 
+  weightmonitor_template_calibration_weight:
+    name: Calibration Weight
+    mode: box
+    min: 1.0
+    max: 100.0
+    step: 0.01
+    unit_of_measurement: "Kg"
+    icon: mdi:weight-kilogram
+  weightmonitor_template_tare_weight:
+    name: Tare Weight
+    mode: box
+    min: 0
+    max: 200.0
+    step: 0.01
+    unit_of_measurement: "Kg"
+    icon: mdi:weight-kilogram
+  weightmonitor_template_gross_weight:
+    name: Gross Weight
+    mode: box
+    min: 0
+    max: 200.0
+    step: 0.01
+    unit_of_measurement: "Kg"
+    icon: mdi:weight-kilogram
+input_text:
+  weightmonitor_template_name:
+  weightmonitor_template_group:
+  weightmonitor_template_location:
+
+
+automation:
+  - alias: weightmonitor_template Update And Alarm Check
+    id: weightmonitor_template_update_and_alarm_check
+    triggers:
+      - seconds: /1
+        trigger: time_pattern
+        id: time_pattern
+      - entity_id: sensor.template_weightmonitor_template_alarm
+        trigger: state
+        id: state_change
+    conditions: []
+    actions:
+      - choose:
+          - conditions:
+              - condition: trigger
+                id: time_pattern
+            sequence:
+              - target:
+                  entity_id: sensor.weightmonitor_template_last_update
+                action: homeassistant.update_entity
+                data: {}
+          - conditions:
+              - condition: trigger
+                id: state_change
+              - condition: template
+                value_template: "{{ trigger.to_state.state != trigger.from_state.state }}"
+            sequence:
+              - data:
+                  entity_id: "{{ trigger.entity_id }}"
+                action: script.alarm_notifications
+    mode: queued
