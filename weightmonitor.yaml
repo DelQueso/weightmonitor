@@ -5,11 +5,8 @@ esphome:
   name: "${name}"
   friendly_name: "${friendly_name}"
   name_add_mac_suffix: true
-
-
-
-project:
-  name: "delqueso.weightmonitor"
+  project:
+    name: "delqueso.weightmonitor"
 
 # Example configuration entry
 http_request:
