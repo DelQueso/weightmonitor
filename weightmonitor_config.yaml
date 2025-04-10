@@ -1,14 +1,14 @@
 template:
   - sensor:
     - name: weightmonitor_template_installed_config_version
-      state: 0.0.3
+      state: 0.0.4
   - binary_sensor:
     - name: weightmonitor_template_config_version_uptodate
-        value_template: >
-          {% set latest = states('sensor.weightmonitor_template_latest_config_version') %}
-          {% set installed = states('sensor.weightmonitor_template_installed_config_version') %}
-          {{ latest != 'unknown' and installed != 'unknown' and latest == installed }}
-        device_class: update
+      state: >
+        {% set latest = states('sensor.weightmonitor_template_latest_config_version') %}
+        {% set installed = states('sensor.weightmonitor_template_installed_config_version') %}
+        {{ latest != 'unknown' and installed != 'unknown' and latest == installed }}
+      device_class: update
   # Check if weight is within range. When weight is unavailable, this value is set to false. The sensor becomes true after some delay.
   - binary_sensor:
     - name: weightmonitor_template_weight_below_alarm_level
