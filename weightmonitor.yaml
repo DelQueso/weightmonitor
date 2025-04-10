@@ -29,11 +29,6 @@ wifi:
 captive_portal:
 logger:
   level: NONE
-text_sensor:
-  - platform: template
-    name: "Project Name"
-    lambda: |-
-      return {"${manufacturer}.${name}"};
 api:  
   services:
     - service: set_zero
