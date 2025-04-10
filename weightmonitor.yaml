@@ -1,14 +1,13 @@
 substitutions:
   name: "weightmonitor"
   friendly_name: "Weight Monitor"
+  manufacturer: "delqueso"
 esphome:
   name: "${name}"
   friendly_name: "${friendly_name}"
   name_add_mac_suffix: true
   project:
-    name: "delqueso.weightmonitor"
-
-# Example configuration entry
+    name: "${manufacturer}.${name}"
 http_request:
   verify_ssl: true
   buffer_size_rx: 2048
@@ -16,27 +15,25 @@ http_request:
 update:
   - platform: http_request
     name: Firmware Update
-    source: https://github.com/delqueso/weightmonitor/releases/latest/download/weightmonitor.manifest.json
+    source: https://github.com/${manufacturer}/${name}/releases/latest/download/${name}.manifest.json
 esp32:
   board: esp32dev
   framework:
     type: esp-idf
-
-
-
 ota:
 - platform: http_request
-
 wifi:
-
   # Enable fallback hotspot (captive portal) in case wifi connection fails
   ap:
     password: '12345678'
 captive_portal:
 logger:
   level: NONE
-
-
+text_sensor:
+  - platform: template
+    name: "Project Name"
+    lambda: |-
+      return {"${manufacturer}.${name}"};
 api:  
   services:
     - service: set_zero
@@ -56,16 +53,21 @@ api:
         - globals.set:
             id: load_weight
             value: !lambda "return value;"
-
-
-text_sensor:
-  - platform: template
-    name: "Project Name"
-    lambda: |-
-      return {"delqueso.weightmonitor"};
-
-
 sensor:
+  - platform: wifi_signal # Reports the WiFi signal strength/RSSI in dB
+    name: "WiFi Signal dB"
+    id: wifi_signal_db
+    update_interval: 60s
+    entity_category: "diagnostic"
+
+  - platform: copy # Reports the WiFi signal strength in %
+    source_id: wifi_signal_db
+    name: "WiFi Signal Percent"
+    filters:
+      - lambda: return min(max(2 * (x + 100.0), 0.0), 100.0);
+    unit_of_measurement: "%"
+    entity_category: "diagnostic"
+    device_class: ""  
   - platform: hx711
     name: "Raw Weight"
     dout_pin: GPIO22
@@ -87,21 +89,6 @@ sensor:
       float known_weight = id(load_weight); // The user-defined weight
       float scale = (id(calibration_known) - offset) / known_weight;
       return (raw - offset) / scale;
-  - platform: wifi_signal # Reports the WiFi signal strength/RSSI in dB
-    name: "WiFi Signal dB"
-    id: wifi_signal_db
-    update_interval: 60s
-    entity_category: "diagnostic"
-
-  - platform: copy # Reports the WiFi signal strength in %
-    source_id: wifi_signal_db
-    name: "WiFi Signal Percent"
-    filters:
-      - lambda: return min(max(2 * (x + 100.0), 0.0), 100.0);
-    unit_of_measurement: "%"
-    entity_category: "diagnostic"
-    device_class: ""      
-
 globals:
   - id: calibration_empty
     type: float
