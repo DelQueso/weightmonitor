@@ -1,7 +1,7 @@
 template:
   - sensor:
     - name: weightmonitor_template_installed_config_version
-      state: 0.0.4
+      state: 0.0.5
   - binary_sensor:
     - name: weightmonitor_template_config_version_uptodate
       state: >
@@ -93,6 +93,12 @@ command_line:
         grep 'state:' | head -n 1 | cut -d':' -f2 | xargs
       scan_interval: 30
       value_template: "{{ value }}"
+input_boolean:
+  weightmonitor_template_report_remaining_capacity:
+    name: "Report Remaining Capacity"
+    icon: mdi:checkbox-marked  
+    initial: true
+    restore: true
 input_number:
   weightmonitor_template_warning_capacity_threshold:
     name: Low Weight Threshold
