@@ -1,7 +1,7 @@
 template:
   - sensor:
     - name: weightmonitor_template_installed_config_version
-      state: 0.0.6
+      state: 0.0.7
   - binary_sensor:
     - name: weightmonitor_template_config_version_uptodate
       state: >
@@ -91,7 +91,7 @@ command_line:
       command: >
         wget -qO- https://raw.githubusercontent.com/DelQueso/weightmonitor/refs/heads/main/weightmonitor_config.yaml |
         grep 'state:' | head -n 1 | cut -d':' -f2 | xargs
-      scan_interval: 30
+      scan_interval: 3600
       value_template: "{{ value }}"
 input_boolean:
   weightmonitor_template_report_remaining_capacity:
