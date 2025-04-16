@@ -1,7 +1,7 @@
 template:
   - sensor:
     - name: weightmonitor_template_installed_config_version
-      state: 0.0.7
+      state: 0.0.8
   - binary_sensor:
     - name: weightmonitor_template_config_version_uptodate
       state: >
@@ -181,5 +181,5 @@ automation:
             sequence:
               - data:
                   entity_id: "{{ trigger.entity_id }}"
-                action: script.alarm_notifications
+                action: script.alarm_collect
     mode: queued
