@@ -98,7 +98,7 @@ sensor:
       return id(weightcalc).state;
     filters:
       - or:
-          - throttle: 60s       # Send once per minute normally
+          - heartbeat: 60s       # Send once per minute normally
           - delta: 0.3          # Send immediately if big change
 globals:
   - id: calibration_empty
