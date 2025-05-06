@@ -29,7 +29,7 @@ wifi:
     password: '12345678'
 captive_portal:
 logger:
-  level: NONE
+  level: DEBUG
 api:  
   services:
     - service: set_zero
