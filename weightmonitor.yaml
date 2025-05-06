@@ -29,7 +29,7 @@ wifi:
     password: '12345678'
 captive_portal:
 logger:
-  level: DEBUG
+  level: NONE
 api:  
   services:
     - service: set_zero
@@ -94,6 +94,7 @@ sensor:
     unit_of_measurement: "kg"
     accuracy_decimals: 2
     update_interval: 1s
+    force_update: true
     lambda: |-
       return id(weightcalc).state;
     filters:
